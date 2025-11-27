@@ -61,7 +61,7 @@ void ILI9341_Init() {
     // SOFTWARE RESET
     ILI9341_WriteCommand(0x01);
     HAL_Delay(1000);
-        
+
     // POWER CONTROL A
     ILI9341_WriteCommand(0xCB);
     {
@@ -275,6 +275,7 @@ void ILI9341_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint1
     ILI9341_SetAddressWindow(x, y, x+w-1, y+h-1);
 
     uint8_t data[] = { color >> 8, color & 0xFF };
+    //HAL_GPIO_WritePin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin, GPIO_PIN_SET);
     for(y = h; y > 0; y--) {
         for(x = w; x > 0; x--) {
