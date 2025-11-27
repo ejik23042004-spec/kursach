@@ -22,6 +22,7 @@ RM := rm -rf
 -include Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/subdir.mk
 -include Middlewares/Third_Party/FreeRTOS/Source/subdir.mk
 -include Drivers/STM32L4xx_HAL_Driver/Src/subdir.mk
+-include Core/ili9341/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include objects.mk
@@ -97,7 +98,7 @@ main-build: kursov.elf secondary-outputs
 
 # Tool invocations
 kursov.elf kursov.map: $(OBJS) $(USER_OBJS) C:\Users\user\Desktop\sharaga_4\mc\kursov\STM32L452RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "kursov.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\user\Desktop\sharaga_4\mc\kursov\STM32L452RETX_FLASH.ld" -Wl,-Map="kursov.map" -Wl,--gc-sections -static -L"C:\Users\user\Desktop\sharaga_4\mc\kursov\Middlewares\ST\touchgfx\lib\core\cortex_m4f\gcc" -L"C:\Users\user\Desktop\sharaga_4\mc\kursov\srv\ili9341" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+	arm-none-eabi-g++ -o "kursov.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\user\Desktop\sharaga_4\mc\kursov\STM32L452RETX_FLASH.ld" -Wl,-Map="kursov.map" -Wl,--gc-sections -static -L"C:\Users\user\Desktop\sharaga_4\mc\kursov\Middlewares\ST\touchgfx\lib\core\cortex_m4f\gcc" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
