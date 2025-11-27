@@ -1,0 +1,30 @@
+
+{
+  "Application": {
+    "Name": "kursov",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "AvailableColorDepths": [ 16 ],
+    "AvailableLCDs":
+    {
+      "16": "LCD16bpp"
+    },
+    "AvailableResolutions": [
+      {
+        "Width": 280,
+        "Height": 320
+      }
+    ],
+    "PostGenerateTargetCommand": "touchgfx update_project",
+    "Family": "STM32L4",
+    "SubFamily": "STM32L4x2",
+    "Platform": "m4",
+    "Toolchain": "STM32CubeIDE",
+    "ProjectFile": "../kursov.ioc",
+    "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
+    "OptionalComponents": [
+    ],
+    "AdditionalFeatures": [
+    ]
+  },
+  "Version": "4.26.0"
+}
