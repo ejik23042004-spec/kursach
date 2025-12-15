@@ -27,8 +27,9 @@ extern SPI_HandleTypeDef ILI9341_SPI_PORT;
 // default orientation
 #define ILI9341_WIDTH  320
 #define ILI9341_HEIGHT 240
-//#define ILI9341_ROTATION (ILI9341_MADCTL_MX | ILI9341_MADCTL_BGR) вертикальная ориентация
-#define ILI9341_ROTATION (ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR) //горизонтальная
+//#define ILI9341_ROTATION (ILI9341_MADCTL_MX | ILI9341_MADCTL_RGB) вертикальная ориентация
+// Горизонтальная ориентация, RGB (без BGR), чтобы совпадать с форматом TouchGFX RGB565
+#define ILI9341_ROTATION (ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341_MADCTL_RGB)
 
 // rotate right
 /*

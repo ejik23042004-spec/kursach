@@ -1,0 +1,3 @@
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:117:17:static touchgfx::HAL* touchgfx::HAL::getInstance()	4	static
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:666:10:void touchgfx::HAL::vSync()	16	static
+../TouchGFX/target/TouchGFXVSync.cpp:11:17:void touchgfxSignalVSync()	8	static

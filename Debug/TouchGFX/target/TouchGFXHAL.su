@@ -34,8 +34,8 @@
 ../TouchGFX/target/TouchGFXHAL.cpp:156:6:virtual void TouchGFXHAL::enableLCDControllerInterrupt()	16	static
 ../TouchGFX/target/TouchGFXHAL.cpp:166:6:virtual bool TouchGFXHAL::beginFrame()	16	static
 ../TouchGFX/target/TouchGFXHAL.cpp:171:6:virtual void TouchGFXHAL::endFrame()	16	static
-../TouchGFX/target/TouchGFXHAL.cpp:191:6:void touchgfxDisplayDriverTransmitBlock(const uint8_t*, uint16_t, uint16_t, uint16_t, uint16_t)	48	static
-../TouchGFX/target/TouchGFXHAL.cpp:210:5:int touchgfxDisplayDriverTransmitActive()	4	static
-../TouchGFX/target/TouchGFXHAL.cpp:219:5:int touchgfxDisplayDriverShouldTransferBlock(uint16_t)	16	static
+../TouchGFX/target/TouchGFXHAL.cpp:200:6:void touchgfxDisplayDriverTransmitBlock(const uint8_t*, uint16_t, uint16_t, uint16_t, uint16_t)	56	static
+../TouchGFX/target/TouchGFXHAL.cpp:238:5:int touchgfxDisplayDriverTransmitActive()	4	static
+../TouchGFX/target/TouchGFXHAL.cpp:247:5:int touchgfxDisplayDriverShouldTransferBlock(uint16_t)	16	static
 ../TouchGFX/target/TouchGFXHAL.hpp:36:7:TouchGFXHAL::~TouchGFXHAL()	16	static
 ../TouchGFX/target/TouchGFXHAL.hpp:36:7:virtual TouchGFXHAL::~TouchGFXHAL()	16	static

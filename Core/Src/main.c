@@ -75,6 +75,7 @@ void StartDefaultTask(void *argument);
 
 void TouchGFX_Task_custom(void *argument);
 void StartDisplayTask(void *argument);
+void VSyncTask(void *argument);
 
 
 /* USER CODE END PFP */
@@ -140,9 +141,7 @@ int main(void)
 
 
 
-	ILI9341_Init();
-	ILI9341_FillScreen(0xFF00); // Черный
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -158,22 +157,31 @@ int main(void)
 
 
   osThreadId_t displayTaskHandle;
+  osThreadId_t touchgfxTaskHandle;
+  osThreadId_t vsyncTaskHandle;
+
   const osThreadAttr_t displayTask_attributes = {
       .name = "displayTask",
       .stack_size = 512 * 4,
       .priority = (osPriority_t) osPriorityNormal,
   };
 
-  osThreadId_t touchgfxTaskHandle;
-
   const osThreadAttr_t touchgfxTask_attributes = {
     .name = "TouchGFX",
-    .stack_size = 512*4,      // важно: TouchGFX любит стек
-    .priority = (osPriority_t) osPriorityNormal
+    .stack_size = 512 * 4,      // увеличенный стек для TouchGFX
+    .priority = (osPriority_t) osPriorityHigh
+  };
+
+  const osThreadAttr_t vsyncTask_attributes = {
+    .name = "VSyncTask",
+    .stack_size = 256 * 4,
+    .priority = (osPriority_t) osPriorityAboveNormal
   };
 
   touchgfxTaskHandle = osThreadNew(TouchGFX_Task_custom, NULL, &touchgfxTask_attributes);
 
+  /* Периодический VSYNC в отдельном потоке (для тестов, без использования таймеров) */
+  vsyncTaskHandle = osThreadNew(VSyncTask, NULL, &vsyncTask_attributes);
 
 
   //displayTaskHandle = osThreadNew(StartDisplayTask, NULL, &displayTask_attributes);
@@ -460,11 +468,29 @@ static void MX_GPIO_Init(void)
 
 void TouchGFX_Task_custom(void *argument)
 {
+    /* Поток TouchGFX: внутри MX_TouchGFX_Process() вызывается touchgfx_taskEntry(),
+     * который содержит свой собственный бесконечный цикл. Вызывать его в for(;;)
+     * нельзя — достаточно одного вызова.
+     */
+    (void)argument;
+    MX_TouchGFX_Process();  // не возвращает управление
+}
 
+void VSyncTask(void *argument)
+{
+    (void)argument;
+
+    /* Простой тестовый вариант: генерируем VSYNC из потока с периодом ~16 мс (~60 Гц) */
+    extern void touchgfxSignalVSync(void);
+
+
+    ILI9341_Init();
+    ILI9341_FillScreen(0xFF00); // Черный
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
     for (;;)
     {
-        MX_TouchGFX_Process();
-        osDelay(1);
+        touchgfxSignalVSync();
+        osDelay(5000);
     }
 }
 

@@ -176,6 +176,11 @@ void TouchGFXHAL::endFrame()
 #include <stdbool.h>
 #include <stdint.h>
 
+// Forward declaration для startNewTransfer() из TouchGFXGeneratedHAL.cpp
+namespace touchgfx {
+    void startNewTransfer();
+}
+
 extern "C" {
 
 // твоя функция из библиотеки дисплея
@@ -183,6 +188,10 @@ void ILI9341_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uin
 
 // флаг занятости передачи (нужен для touchgfxDisplayDriverTransmitActive)
 static volatile bool isTransmittingBlock = false;
+
+// Буфер для инверсии цветов. Размер должен быть не меньше block size
+// из TouchGFXGeneratedHAL.cpp (ManyBlockAllocator<10000, ...>).
+static uint16_t invertedBlockBuffer[10000];
 
 /**
  * TouchGFX calls this when it has rendered a block that must be transferred to the display.
@@ -195,13 +204,32 @@ void touchgfxDisplayDriverTransmitBlock(const uint8_t* pixels,
     isTransmittingBlock = true;
 
     // ВАЖНО: TouchGFX отдаёт uint8_t*, но это RGB565 => трактуем как uint16_t*
-    const uint16_t* rgb565 = (const uint16_t*)pixels;
+    const uint16_t* src = (const uint16_t*)pixels;
 
-    // Самый простой рабочий путь: сразу залить прямоугольник
-    ILI9341_DrawImage(x, y, w, h, rgb565);
+    // Количество пикселей в блоке
+    uint32_t count = (uint32_t)w * (uint32_t)h;
+    if (count > (uint32_t)(sizeof(invertedBlockBuffer) / sizeof(invertedBlockBuffer[0])))
+    {
+        // Защита от переполнения буфера: если что-то пошло не так, просто обрежем блок
+        count = (uint32_t)(sizeof(invertedBlockBuffer) / sizeof(invertedBlockBuffer[0]));
+    }
 
-    // Т.к. ILI9341_DrawImage у тебя блокирующая (без DMA) - передача уже завершена
+    // Инвертируем цвета RGB565: каждый пиксель XOR с 0xFFFF
+    for (uint32_t i = 0; i < count; i++)
+    {
+        invertedBlockBuffer[i] = (uint16_t)(src[i] ^ 0xFFFF);
+    }
+
+    // Передаём инвертированный блок на дисплей
+    ILI9341_DrawImage(x, y, w, h, invertedBlockBuffer);
+
+    // Т.к. ILI9341_DrawImage у нас блокирующая (без DMA), передача уже завершена.
+    // Сообщаем TouchGFX, что можно начинать следующий блок.
     isTransmittingBlock = false;
+    
+    // ВАЖНО: вызываем startNewTransfer(), который освободит текущий блок
+    // и запустит передачу следующего блока, если он готов
+    touchgfx::startNewTransfer();
 }
 
 /**
