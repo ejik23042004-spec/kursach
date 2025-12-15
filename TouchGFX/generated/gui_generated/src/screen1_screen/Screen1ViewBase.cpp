@@ -7,7 +7,7 @@
 
 Screen1ViewBase::Screen1ViewBase()
 {
-    __background.setPosition(0, 0, 320, 280);
+    __background.setPosition(0, 0, 320, 240);
     __background.setColor(touchgfx::Color::getColorFromRGB(0, 0, 0));
     add(__background);
 
@@ -16,6 +16,10 @@ Screen1ViewBase::Screen1ViewBase()
     textArea1.setLinespacing(0);
     textArea1.setTypedText(touchgfx::TypedText(T___SINGLEUSE_7NEO));
     add(textArea1);
+
+    box1.setPosition(84, 56, 50, 50);
+    box1.setColor(touchgfx::Color::getColorFromRGB(255, 255, 255));
+    add(box1);
 }
 
 Screen1ViewBase::~Screen1ViewBase()

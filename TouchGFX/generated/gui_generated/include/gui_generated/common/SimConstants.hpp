@@ -4,8 +4,8 @@
 #ifndef SIMCONSTANTS_HPP
 #define SIMCONSTANTS_HPP
 
-static unsigned short SIM_WIDTH = 280;
-static unsigned short SIM_HEIGHT = 320;
+static unsigned short SIM_WIDTH = 320;
+static unsigned short SIM_HEIGHT = 240;
 #define SIM_TITLE "kursov"
 
 #endif // SIMCONSTANTS_HPP

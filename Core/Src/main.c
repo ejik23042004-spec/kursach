@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "app_touchgfx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -42,7 +43,12 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CRC_HandleTypeDef hcrc;
+
 SPI_HandleTypeDef hspi1;
+
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -59,12 +65,15 @@ const osThreadAttr_t defaultTask_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART1_UART_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_CRC_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
 
-
+void TouchGFX_Task_custom(void *argument);
 void StartDisplayTask(void *argument);
 
 
@@ -105,6 +114,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
+  MX_CRC_Init();
+  MX_TouchGFX_Init();
+  /* Call PreOsInit function */
+  MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -122,6 +137,12 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
+
+
+
+	ILI9341_Init();
+	ILI9341_FillScreen(0xFF00); // Черный
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -143,7 +164,19 @@ int main(void)
       .priority = (osPriority_t) osPriorityNormal,
   };
 
-  displayTaskHandle = osThreadNew(StartDisplayTask, NULL, &displayTask_attributes);
+  osThreadId_t touchgfxTaskHandle;
+
+  const osThreadAttr_t touchgfxTask_attributes = {
+    .name = "TouchGFX",
+    .stack_size = 512*4,      // важно: TouchGFX любит стек
+    .priority = (osPriority_t) osPriorityNormal
+  };
+
+  touchgfxTaskHandle = osThreadNew(TouchGFX_Task_custom, NULL, &touchgfxTask_attributes);
+
+
+
+  //displayTaskHandle = osThreadNew(StartDisplayTask, NULL, &displayTask_attributes);
 
   /* USER CODE END RTOS_THREADS */
 
@@ -230,6 +263,37 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief CRC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CRC_Init(void)
+{
+
+  /* USER CODE BEGIN CRC_Init 0 */
+
+  /* USER CODE END CRC_Init 0 */
+
+  /* USER CODE BEGIN CRC_Init 1 */
+
+  /* USER CODE END CRC_Init 1 */
+  hcrc.Instance = CRC;
+  hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
+  hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+  hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+  hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CRC_Init 2 */
+
+  /* USER CODE END CRC_Init 2 */
+
+}
+
+/**
   * @brief SPI1 Initialization Function
   * @param None
   * @retval None
@@ -252,7 +316,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -266,6 +330,76 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -321,6 +455,66 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+#include <math.h>
+
+
+void TouchGFX_Task_custom(void *argument)
+{
+
+    for (;;)
+    {
+        MX_TouchGFX_Process();
+        osDelay(1);
+    }
+}
+
+
+
+
+#define M_PI 3.14159265358979323846
+float sine_function(float x, uint16_t amplitude, uint16_t phase_shift)
+{
+    // Нормализуем x к диапазону [0, 1]
+    float normalized = x / 320.0f;
+
+    // Преобразуем в фазу для полного цикла синуса [0, 2π]
+    float phase = normalized * 5.0f * M_PI + (phase_shift/1);
+
+    // Вычисляем синус (диапазон [-1, 1])
+    float sine_value = (float)sin((double)phase);
+
+    // Масштабируем к диапазону [0, 240]
+    float result = (sine_value + 1.0f) * amplitude+(120 - amplitude);
+
+    return result;
+}
+
+
+typedef struct {
+    float y_top;
+    float y_bottom;
+} all_y_for_circle;
+
+all_y_for_circle circle_function(float x, uint16_t a, uint16_t b, uint16_t r)
+{
+	all_y_for_circle points;
+
+	 // Проверяем, находится ли x в пределах круга
+	    if (x < a - r || x > a + r) {
+	        points.y_top = NAN;
+	        points.y_bottom = NAN;
+	        return points;
+	    }
+    // Вычисляем y для верхней полуокружности
+	 points.y_top = b + sqrt(r*r - (x-a)*(x-a));
+
+    // Или для нижней полуокружности, в зависимости от вашей логики
+	 points.y_bottom = b - sqrt(r*r - (-x+a)*(-x+a));
+
+    return points;
+}
+
+
 
 
 
@@ -338,20 +532,93 @@ void StartDisplayTask(void *argument)
 
 
     ILI9341_Init();
-    //ILI9341_FillScreen(0x0000); // Черный
+    ILI9341_FillScreen(0xFFFF); // Черный
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-
-
+    uint16_t current_color = 0;
+   	uint16_t x = 0;
+   	uint16_t y = 0 , y2 = 0;
+   	uint16_t a = 1;
+   	uint16_t current_state = 1;
+   	uint16_t phase = 0;
+	uint16_t amplitude = 0;
     for(;;)
     {
-        ILI9341_FillScreen(0xF800); // Красный
-        osDelay(500);
+    	if(x==320)
+    	{
+    		amplitude = amplitude + current_state;
+    		phase = phase + 1;
+    		x=0;
+    		y=0;
 
-        ILI9341_FillScreen(0x07E0); // Зеленый
-        osDelay(500);
+    		current_color = 0x0000;
+    		//ILI9341_DrawPixel(x, y, 0x0000);
+    	}
+    	if(amplitude==118){
 
-        ILI9341_FillScreen(0x001F); // Синий
-        osDelay(500);
+    		current_state = -1;
+
+    	}
+    	if(amplitude==2){
+
+    	    		current_state = 1;
+
+    	    	}
+
+
+
+//    	if(x==320 && current_state == 1)
+//    	    	{
+//    				//phase++;
+//    	    		x=0;
+//    	    		y=0;
+//    	    		current_state = 0;
+//    	    		current_color = 0xFFFF;
+//    	    		//ILI9341_DrawPixel(x, y, 0x0000);
+//    	    	}
+
+    //	osDelay(10);
+
+
+    	x++;
+
+    	y=sine_function(x,amplitude,phase);
+    	y2=sine_function(x,amplitude - current_state,phase - 1);
+    	uint16_t a1 = 320/2;
+    	uint16_t b1 = 240/2;
+    	uint16_t r1 = 50;
+    	uint16_t y3 = 0;
+
+    	//y3=sine_function(x,amplitude - current_state-1,phase - 1);
+    	//HAL_UART_Transmit (&huart2, "Current y: %u", y,100);
+
+    	for (uint8_t i =0; i < a; i++){
+        //ILI9341_DrawPixel(x, y2+i + a/2, 0xFFFF);
+        //ILI9341_DrawPixel(x, y2+i - a/2, 0xFFFF);
+        //ILI9341_DrawPixel(x, y2+i+1 - a/2, 0xFFFF);
+    	//ILI9341_DrawPixel(x, y+i - a/2, 0x0000);
+    		for (float x = a1 - r1; x <= a1 + r1; x += 1.0f) {
+    		        // Получаем точки окружности для текущего X
+    		        all_y_for_circle points = circle_function(x, a1, b1, r1);
+
+
+
+
+    		            ILI9341_DrawPixel((uint16_t)round(x), (uint16_t)round(points.y_top)+ a/2, 0x0000);
+    		            ILI9341_DrawPixel((uint16_t)round(x), (uint16_t)round(points.y_bottom)+ a/2, 0x0000);
+
+    		        osDelay(5);
+
+    		          //if (x > a1 + r1) {
+    		          //ILI9341_DrawPixel((uint16_t)round(x), (uint16_t)round(points.y_top)+ a/2, 0xFFFF);
+    		          //}
+
+
+    		          //if (x > a1 - r1) {
+    		          //LI9341_DrawPixel((uint16_t)round(x), (uint16_t)round(points.y_bottom)+ a/2, 0xFFFF);
+    		          //}
+    		    }
+    	}
+        //ILI9341_FillScreen(0xFFFF); // Черный
     }
 }
 

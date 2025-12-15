@@ -19,6 +19,19 @@
               "Blue": 5
             },
             "AutoSize": true
+          },
+          {
+            "Type": "Box",
+            "Name": "box1",
+            "X": 84,
+            "Y": 56,
+            "Width": 50,
+            "Height": 50,
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            }
           }
         ],
         "Interactions": []
@@ -27,8 +40,8 @@
     "CustomContainerDefinitions": [],
     "Name": "kursov",
     "Resolution": {
-      "Width": 280,
-      "Height": 320
+      "Width": 320,
+      "Height": 240
     },
     "SelectedColorDepth": 16,
     "StartupScreenName": "Screen1",
@@ -47,8 +60,8 @@
     ],
     "AvailableResolutions": [
       {
-        "Width": 280,
-        "Height": 320
+        "Width": 320,
+        "Height": 240
       }
     ],
     "PhysicalButtons": [],
