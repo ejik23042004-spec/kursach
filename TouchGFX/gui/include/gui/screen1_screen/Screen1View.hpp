@@ -4,6 +4,10 @@
 #include <gui_generated/screen1_screen/Screen1ViewBase.hpp>
 #include <gui/screen1_screen/Screen1Presenter.hpp>
 
+// Внешние переменные координат тача из main.c
+extern volatile uint16_t touch_x;
+extern volatile uint16_t touch_y;
+
 class Screen1View : public Screen1ViewBase
 {
 public:

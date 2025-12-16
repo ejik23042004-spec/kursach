@@ -4,18 +4,24 @@
 Screen1View::Screen1View()
     : counter(0), flag(true)
 {
-    // Привязываем наш буфер к textArea1 (если в Designer стоит Wildcard)
+    // Привязываем буферы к textArea1 и textArea2
     textArea1.setWildcard1(textBuffer);
     Unicode::snprintf(textBuffer, TEXT_BUFFER_SIZE, "%d", 0);
     textArea1.invalidate();
 
-
-    // Привязываем наш буфер к textArea1 (если в Designer стоит Wildcard)
     textArea2.setWildcard1(textBuffer);
     Unicode::snprintf(textBuffer, TEXT_BUFFER_SIZE, "%d", 0);
     textArea2.invalidate();
 
-
+    // Привязываем ОБА буфера к textArea3 (для двух wildcards)
+    // textArea3Buffer1 и textArea3Buffer2 уже определены в Screen1ViewBase
+    textArea3.setWildcard1(textArea3Buffer1);
+    textArea3.setWildcard2(textArea3Buffer2);
+    
+    // Инициализируем оба буфера
+    Unicode::snprintf(textArea3Buffer1, TEXTAREA3BUFFER1_SIZE, "%d", 0);
+    Unicode::snprintf(textArea3Buffer2, TEXTAREA3BUFFER2_SIZE, "%d", 0);
+    textArea3.invalidate();
 }
 
 void Screen1View::setupScreen()
@@ -25,16 +31,19 @@ void Screen1View::setupScreen()
 
 void Screen1View::handleTickEvent()
 {
-    counter++;
-
-    // раз в 60 тиков (если tick ~60Hz, то раз в секунду)
-    if ((counter % 1) == 0)
-    {
-        touchgfx::Unicode::snprintf(textBuffer, TEXT_BUFFER_SIZE, "%d", counter);
-        textArea1.invalidate();
-        textArea2.invalidate();
-    }
-
+    // Обновляем textArea1 и textArea2 (если нужно)
+    touchgfx::Unicode::snprintf(textBuffer, TEXT_BUFFER_SIZE, "%d", touch_y);
+    textArea1.invalidate();
+    textArea2.invalidate();
+    
+    // Обновляем textArea3 с координатами X и Y
+    // Wildcard1 = X координата
+    Unicode::snprintf(textArea3Buffer1, TEXTAREA3BUFFER1_SIZE, "%d", touch_x);
+    // Wildcard2 = Y координата
+    Unicode::snprintf(textArea3Buffer2, TEXTAREA3BUFFER2_SIZE, "%d", touch_y);
+    
+    // Обновляем отображение
+    textArea3.invalidate();
 }
 
 void Screen1View::tearDownScreen()

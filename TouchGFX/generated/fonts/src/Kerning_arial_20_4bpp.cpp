@@ -4,8 +4,10 @@ FONT_KERNING_LOCATION_FLASH_PRAGMA
 KEEP extern const touchgfx::KerningNode kerning_arial_20_4bpp[] FONT_KERNING_LOCATION_FLASH_ATTRIBUTE = {
     { 0x0054, -1 },  // (First char = [0x0054, T], Second char = [0x002D, -], Kerning dist = -1)
     { 0x0031, -1 },  // (First char = [0x0031, 1], Second char = [0x0031, 1], Kerning dist = -1)
+    { 0x0054, -2 },  // (First char = [0x0054, T], Second char = [0x003A, :], Kerning dist = -2)
     { 0x0054, -2 },  // (First char = [0x0054, T], Second char = [0x0065, e], Kerning dist = -2)
     { 0x0054, -1 },  // (First char = [0x0054, T], Second char = [0x0077, w], Kerning dist = -1)
+    { 0x0054, -1 },  // (First char = [0x0054, T], Second char = [0x0079, y], Kerning dist = -1)
     { 0x0422, -1 },  // (First char = [0x0422, ], Second char = [0x0430, ], Kerning dist = -1)
     { 0x0422, -1 },  // (First char = [0x0422, ], Second char = [0x0432, ], Kerning dist = -1)
     { 0x0442, -1 },  // (First char = [0x0442, ], Second char = [0x0434, ], Kerning dist = -1)

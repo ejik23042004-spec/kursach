@@ -7,7 +7,7 @@
           {
             "Type": "TextArea",
             "Name": "textArea1",
-            "Y": 22,
+            "Y": 64,
             "Width": 160,
             "Height": 83,
             "TextId": "__SingleUse_R9K3",
@@ -37,7 +37,7 @@
             "Type": "TextArea",
             "Name": "textArea2",
             "X": 160,
-            "Y": 22,
+            "Y": 64,
             "Width": 160,
             "Height": 83,
             "TextId": "__SingleUse_WLLQ",
@@ -47,6 +47,29 @@
               "Blue": 128
             },
             "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textArea3",
+            "X": 240,
+            "Y": 7,
+            "Width": 50,
+            "Height": 48,
+            "TextId": "__SingleUse_0DCI",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 10
+            },
+            "Wildcard2": {
               "UseBuffer": true,
               "BufferSize": 10
             }
