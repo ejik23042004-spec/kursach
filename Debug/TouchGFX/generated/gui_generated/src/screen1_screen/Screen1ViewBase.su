@@ -77,8 +77,8 @@
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextAreaWithWildcard.hpp:62:7:virtual touchgfx::TextAreaWithOneWildcard::~TextAreaWithOneWildcard()	16	static
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Button.hpp:31:7:touchgfx::Button::~Button()	16	static
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Button.hpp:31:7:virtual touchgfx::Button::~Button()	16	static
-../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:9:1:Screen1ViewBase::Screen1ViewBase()	136	static
-../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:40:1:Screen1ViewBase::~Screen1ViewBase()	16	static
-../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:40:1:virtual Screen1ViewBase::~Screen1ViewBase()	16	static
-../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:45:6:virtual void Screen1ViewBase::setupScreen()	16	static
+../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:9:1:Screen1ViewBase::Screen1ViewBase()	128	static
+../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:36:1:Screen1ViewBase::~Screen1ViewBase()	16	static
+../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:36:1:virtual Screen1ViewBase::~Screen1ViewBase()	16	static
+../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:41:6:virtual void Screen1ViewBase::setupScreen()	16	static
 ../Middlewares/ST/touchgfx/framework/include/mvp/View.hpp:39:5:touchgfx::View<T>::View() [with T = Screen1Presenter]	16	static

@@ -27,7 +27,6 @@ protected:
      * Member Declarations
      */
     touchgfx::Box __background;
-    touchgfx::Box box1;
     touchgfx::TextAreaWithOneWildcard textArea1;
     touchgfx::Button button1;
     touchgfx::TextAreaWithOneWildcard textArea2;

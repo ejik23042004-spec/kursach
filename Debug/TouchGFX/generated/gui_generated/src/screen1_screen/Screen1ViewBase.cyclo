@@ -78,7 +78,7 @@
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Button.hpp:31:7:touchgfx::Button::~Button()	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Button.hpp:31:7:virtual touchgfx::Button::~Button()	1
 ../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:9:1:Screen1ViewBase::Screen1ViewBase()	1
-../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:40:1:Screen1ViewBase::~Screen1ViewBase()	1
-../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:40:1:virtual Screen1ViewBase::~Screen1ViewBase()	1
-../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:45:6:virtual void Screen1ViewBase::setupScreen()	1
+../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:36:1:Screen1ViewBase::~Screen1ViewBase()	1
+../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:36:1:virtual Screen1ViewBase::~Screen1ViewBase()	1
+../TouchGFX/generated/gui_generated/src/screen1_screen/Screen1ViewBase.cpp:41:6:virtual void Screen1ViewBase::setupScreen()	1
 ../Middlewares/ST/touchgfx/framework/include/mvp/View.hpp:39:5:touchgfx::View<T>::View() [with T = Screen1Presenter]	1

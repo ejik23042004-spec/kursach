@@ -5,25 +5,11 @@
         "Name": "Screen1",
         "Components": [
           {
-            "Type": "Box",
-            "Name": "box1",
-            "X": 25,
-            "Y": 70,
-            "Width": 125,
-            "Height": 50,
-            "Color": {
-              "Red": 255,
-              "Green": 255,
-              "Blue": 255
-            }
-          },
-          {
             "Type": "TextArea",
             "Name": "textArea1",
-            "X": 20,
-            "Y": 76,
-            "Width": 140,
-            "Height": 38,
+            "Y": 22,
+            "Width": 160,
+            "Height": 83,
             "TextId": "__SingleUse_R9K3",
             "TextRotation": "0",
             "Color": {
@@ -40,6 +26,7 @@
             "Type": "Button",
             "Name": "button1",
             "X": 40,
+            "Y": 158,
             "Width": 240,
             "Height": 50,
             "Pressed": "__generated\\alternate_theme_images_widgets_button_regular_height_50_medium_rounded_pressed.png",
@@ -49,16 +36,15 @@
           {
             "Type": "TextArea",
             "Name": "textArea2",
-            "X": 167,
-            "Y": 83,
-            "Width": 97,
-            "Height": 31,
+            "X": 160,
+            "Y": 22,
+            "Width": 160,
+            "Height": 83,
             "TextId": "__SingleUse_WLLQ",
             "TextRotation": "0",
             "Color": {
-              "Red": 255,
-              "Green": 255,
-              "Blue": 255
+              "Green": 150,
+              "Blue": 128
             },
             "Wildcard1": {
               "UseBuffer": true,

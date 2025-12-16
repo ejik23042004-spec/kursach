@@ -6,11 +6,11 @@
   <Texts>
     <TextGroup Id="Group1" />
     <TextGroup Id="Unsorted">
-      <Text Id="__SingleUse_WLLQ" Alignment="Left" TypographyId="Default">
-        <Translation Language="GB">dddd&lt;value&gt;</Translation>
+      <Text Id="__SingleUse_WLLQ" Alignment="Center" TypographyId="Default">
+        <Translation Language="GB">Температура в&#10;холодной зоне&#10;&lt;value&gt;</Translation>
       </Text>
-      <Text Id="__SingleUse_R9K3" Alignment="Left" TypographyId="Default">
-        <Translation Language="GB">Nigger &lt;value&gt;</Translation>
+      <Text Id="__SingleUse_R9K3" Alignment="Center" TypographyId="Default">
+        <Translation Language="GB">Температура в&#10; теплой зоне &#10;&lt;value&gt;</Translation>
       </Text>
       <Text Id="ResourceId1" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">New Text</Translation>
