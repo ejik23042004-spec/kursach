@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ili9341/ili9341.h"
+#include "ili9341.h"
+#include "ft6336.h"
 
 /* USER CODE END Includes */
 
@@ -44,6 +45,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 CRC_HandleTypeDef hcrc;
+
+I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
 
@@ -68,6 +71,7 @@ static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CRC_Init(void);
+static void MX_I2C1_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -76,6 +80,7 @@ void StartDefaultTask(void *argument);
 void TouchGFX_Task_custom(void *argument);
 void StartDisplayTask(void *argument);
 void VSyncTask(void *argument);
+void TouchTask(void *argument);
 
 
 /* USER CODE END PFP */
@@ -118,10 +123,14 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_CRC_Init();
+  MX_I2C1_Init();
   MX_TouchGFX_Init();
   /* Call PreOsInit function */
   MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
+  
+  // Инициализация FT6336 тачскрина (до запуска RTOS)
+
 
   /* USER CODE END 2 */
 
@@ -159,6 +168,7 @@ int main(void)
   osThreadId_t displayTaskHandle;
   osThreadId_t touchgfxTaskHandle;
   osThreadId_t vsyncTaskHandle;
+  osThreadId_t touchTaskHandle;
 
   const osThreadAttr_t displayTask_attributes = {
       .name = "displayTask",
@@ -178,10 +188,19 @@ int main(void)
     .priority = (osPriority_t) osPriorityAboveNormal
   };
 
+  const osThreadAttr_t touchTask_attributes = {
+    .name = "TouchTask",
+    .stack_size = 256 * 4,
+    .priority = (osPriority_t) osPriorityNormal
+  };
+
   touchgfxTaskHandle = osThreadNew(TouchGFX_Task_custom, NULL, &touchgfxTask_attributes);
 
   /* Периодический VSYNC в отдельном потоке (для тестов, без использования таймеров) */
   vsyncTaskHandle = osThreadNew(VSyncTask, NULL, &vsyncTask_attributes);
+
+  /* Задача опроса тачскрина каждые 10 мс */
+  touchTaskHandle = osThreadNew(TouchTask, NULL, &touchTask_attributes);
 
 
   //displayTaskHandle = osThreadNew(StartDisplayTask, NULL, &displayTask_attributes);
@@ -302,6 +321,54 @@ static void MX_CRC_Init(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x00F12981;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief SPI1 Initialization Function
   * @param None
   * @retval None
@@ -324,7 +391,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -433,6 +500,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin : PA8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PA10 */
   GPIO_InitStruct.Pin = GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -456,6 +529,10 @@ static void MX_GPIO_Init(void)
 
   /**/
   __HAL_SYSCFG_FASTMODEPLUS_ENABLE(SYSCFG_FASTMODEPLUS_PB6);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -540,7 +617,63 @@ all_y_for_circle circle_function(float x, uint16_t a, uint16_t b, uint16_t r)
     return points;
 }
 
+/* USER CODE BEGIN TouchData */
+// Глобальные переменные для передачи координат тача в TouchGFX
+volatile uint16_t touch_x = 0;
+volatile uint16_t touch_y = 0;
+volatile uint8_t touch_pressed = 0;
+/* USER CODE END TouchData */
 
+/**
+ * @brief Задача опроса тачскрина FT6336
+ * @param argument Не используется
+ * @retval None
+ */
+void TouchTask(void *argument)
+{
+    (void)argument;
+    uint16_t x, y;
+    uint8_t touch_status;
+    
+    // Небольшая задержка для инициализации системы
+    osDelay(100);
+    
+    if (ft6336_init() != 0)
+      {
+          // Ошибка инициализации FT6336
+          Error_Handler();
+      }
+
+
+    for (;;)
+    {
+        // Проверяем статус касания
+        touch_status = ft6336_get_td_status();
+        
+        if (touch_status > 0)
+        {
+            // Есть касание - читаем координаты
+            // Меняем местами X и Y, т.к. они перепутаны в чипе
+            ft6336_get_touch1_position(&y, &x);
+            
+            // Сохраняем координаты в глобальные переменные для TouchGFX
+            touch_x = x;
+            touch_y = y;
+            touch_pressed = 1;
+            
+            // Очищаем флаг прерывания (если используется)
+            ft6336_clear_interrupt();
+        }
+        else
+        {
+            // Нет касания
+            touch_pressed = 0;
+        }
+        
+        // Опрос каждые 10 мс (100 Гц)
+        osDelay(10);
+    }
+}
 
 
 

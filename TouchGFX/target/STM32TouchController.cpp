@@ -24,26 +24,32 @@
 
 #include <STM32TouchController.hpp>
 
+// Внешние переменные из main.c для передачи координат тача
+extern volatile uint16_t touch_x;
+extern volatile uint16_t touch_y;
+extern volatile uint8_t touch_pressed;
+
 void STM32TouchController::init()
 {
     /**
      * Initialize touch controller and driver
-     *
+     * Инициализация FT6336 выполняется в main.c в задаче TouchGFX_Task_custom
      */
 }
 
 bool STM32TouchController::sampleTouch(int32_t& x, int32_t& y)
 {
     /**
-     * By default sampleTouch returns false,
-     * return true if a touch has been detected, otherwise false.
-     *
-     * Coordinates are passed to the caller by reference by x and y.
-     *
-     * This function is called by the TouchGFX framework.
-     * By default sampleTouch is called every tick, this can be adjusted by HAL::setTouchSampleRate(int8_t);
-     *
+     * Читаем координаты тача из глобальных переменных,
+     * которые обновляются задачей TouchTask каждые 10 мс
      */
+    if (touch_pressed)
+    {
+        x = (int32_t)touch_x;
+        y = (int32_t)touch_y;
+        return true;
+    }
+    
     return false;
 }
 

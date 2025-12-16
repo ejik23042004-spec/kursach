@@ -1,0 +1,9 @@
+../Core/ili9341/ft6336.c:11:15:ft6336_write_byte	40	static
+../Core/ili9341/ft6336.c:34:15:ft6336_read_byte	40	static
+../Core/ili9341/ft6336.c:56:15:ft6336_init	16	static
+../Core/ili9341/ft6336.c:158:15:ft6336_read_chip_id	8	static
+../Core/ili9341/ft6336.c:167:6:ft6336_set_interrupt_mode	24	static
+../Core/ili9341/ft6336.c:177:6:ft6336_clear_interrupt	8	static
+../Core/ili9341/ft6336.c:186:15:ft6336_get_td_status	16	static
+../Core/ili9341/ft6336.c:193:6:ft6336_get_touch1_position	32	static
+../Core/ili9341/ft6336.c:204:6:ft6336_get_touch2_position	32	static
