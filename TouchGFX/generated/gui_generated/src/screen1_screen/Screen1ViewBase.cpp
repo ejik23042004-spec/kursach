@@ -4,6 +4,7 @@
 #include <gui_generated/screen1_screen/Screen1ViewBase.hpp>
 #include <touchgfx/Color.hpp>
 #include <texts/TextKeysAndLanguages.hpp>
+#include <images/BitmapDatabase.hpp>
 
 Screen1ViewBase::Screen1ViewBase()
 {
@@ -11,15 +12,29 @@ Screen1ViewBase::Screen1ViewBase()
     __background.setColor(touchgfx::Color::getColorFromRGB(0, 0, 0));
     add(__background);
 
-    textArea1.setXY(103, 147);
-    textArea1.setColor(touchgfx::Color::getColorFromRGB(255, 5, 5));
-    textArea1.setLinespacing(0);
-    textArea1.setTypedText(touchgfx::TypedText(T___SINGLEUSE_7NEO));
-    add(textArea1);
-
-    box1.setPosition(84, 56, 50, 50);
+    box1.setPosition(25, 70, 125, 50);
     box1.setColor(touchgfx::Color::getColorFromRGB(255, 255, 255));
     add(box1);
+
+    textArea1.setPosition(20, 76, 140, 38);
+    textArea1.setColor(touchgfx::Color::getColorFromRGB(255, 5, 5));
+    textArea1.setLinespacing(0);
+    textArea1Buffer[0] = 0;
+    textArea1.setWildcard(textArea1Buffer);
+    textArea1.setTypedText(touchgfx::TypedText(T___SINGLEUSE_R9K3));
+    add(textArea1);
+
+    button1.setXY(40, 0);
+    button1.setBitmaps(touchgfx::Bitmap(BITMAP_ALTERNATE_THEME_IMAGES_WIDGETS_BUTTON_REGULAR_HEIGHT_50_MEDIUM_ROUNDED_NORMAL_ID), touchgfx::Bitmap(BITMAP_ALTERNATE_THEME_IMAGES_WIDGETS_BUTTON_REGULAR_HEIGHT_50_MEDIUM_ROUNDED_PRESSED_ID));
+    add(button1);
+
+    textArea2.setPosition(167, 83, 97, 31);
+    textArea2.setColor(touchgfx::Color::getColorFromRGB(255, 255, 255));
+    textArea2.setLinespacing(0);
+    textArea2Buffer[0] = 0;
+    textArea2.setWildcard(textArea2Buffer);
+    textArea2.setTypedText(touchgfx::TypedText(T___SINGLEUSE_WLLQ));
+    add(textArea2);
 }
 
 Screen1ViewBase::~Screen1ViewBase()

@@ -11,7 +11,15 @@ public:
     virtual ~Screen1View() {}
     virtual void setupScreen();
     virtual void tearDownScreen();
+    virtual void handleTickEvent();
+
+    void setText(const char* txt);
+
 protected:
+    uint8_t counter;
+    bool flag;
+    static const uint16_t TEXT_BUFFER_SIZE = 30;
+    touchgfx::Unicode::UnicodeChar textBuffer[TEXT_BUFFER_SIZE];
 };
 
 #endif // SCREEN1VIEW_HPP
