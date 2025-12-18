@@ -217,7 +217,11 @@ void touchgfxDisplayDriverTransmitBlock(const uint8_t* pixels,
     // Инвертируем цвета RGB565: каждый пиксель XOR с 0xFFFF
     for (uint32_t i = 0; i < count; i++)
     {
-        invertedBlockBuffer[i] = (uint16_t)(src[i] ^ 0xFFFF);
+    	invertedBlockBuffer[i] = (src[i] >> 8) | (src[i] << 8);
+
+//        invertedBlockBuffer[i] = (uint16_t)(src[i] ^ 0xFFFF);
+//        uint16_t p = invertedBlockBuffer[i];
+
     }
 
     // Передаём инвертированный блок на дисплей

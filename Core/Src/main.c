@@ -184,7 +184,7 @@ int main(void)
 
   const osThreadAttr_t vsyncTask_attributes = {
     .name = "VSyncTask",
-    .stack_size = 256 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t) osPriorityAboveNormal
   };
 
@@ -562,8 +562,24 @@ void VSyncTask(void *argument)
 
 
     ILI9341_Init();
-    ILI9341_FillScreen(0xFF00); // Черный
+    //ILI9341_FillScreen(0xFFFF); // Черный
+
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+    //osDelay(1000);
+    ILI9341_InvertColors(1);
+//    ILI9341_FillScreen(ILI9341_BLACK);
+//    HAL_Delay(300);
+//    ILI9341_FillScreen(ILI9341_WHITE);
+//    HAL_Delay(300);
+//    ILI9341_FillScreen(ILI9341_RED);
+//    HAL_Delay(300);
+//    ILI9341_FillScreen(ILI9341_GREEN);
+//     HAL_Delay(300);
+//    ILI9341_FillScreen(ILI9341_YELLOW);
+//    HAL_Delay(300);
+//    ILI9341_FillScreen(ILI9341_BLUE);
+
+
     for (;;)
     {
         touchgfxSignalVSync();

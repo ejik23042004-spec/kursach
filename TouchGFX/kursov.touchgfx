@@ -43,8 +43,8 @@
             "TextId": "__SingleUse_WLLQ",
             "TextRotation": "0",
             "Color": {
-              "Green": 150,
-              "Blue": 128
+              "Green": 38,
+              "Blue": 255
             },
             "Wildcard1": {
               "UseBuffer": true,
@@ -73,6 +73,13 @@
               "UseBuffer": true,
               "BufferSize": 10
             }
+          },
+          {
+            "Type": "TiledImage",
+            "Name": "tiledImage1",
+            "Width": 320,
+            "Height": 240,
+            "FileName": "image_2025-12-17_16-44-01.png"
           }
         ],
         "Interactions": []

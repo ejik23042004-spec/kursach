@@ -10,6 +10,7 @@
 #include <touchgfx/widgets/Box.hpp>
 #include <touchgfx/widgets/TextAreaWithWildcard.hpp>
 #include <touchgfx/widgets/Button.hpp>
+#include <touchgfx/widgets/TiledImage.hpp>
 
 class Screen1ViewBase : public touchgfx::View<Screen1Presenter>
 {
@@ -31,6 +32,7 @@ protected:
     touchgfx::Button button1;
     touchgfx::TextAreaWithOneWildcard textArea2;
     touchgfx::TextAreaWithTwoWildcards textArea3;
+    touchgfx::TiledImage tiledImage1;
 
     /*
      * Wildcard Buffers

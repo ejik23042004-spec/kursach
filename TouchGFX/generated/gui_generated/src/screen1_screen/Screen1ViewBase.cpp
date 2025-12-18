@@ -25,7 +25,7 @@ Screen1ViewBase::Screen1ViewBase()
     add(button1);
 
     textArea2.setPosition(160, 64, 160, 83);
-    textArea2.setColor(touchgfx::Color::getColorFromRGB(0, 150, 128));
+    textArea2.setColor(touchgfx::Color::getColorFromRGB(0, 38, 255));
     textArea2.setLinespacing(0);
     textArea2Buffer[0] = 0;
     textArea2.setWildcard(textArea2Buffer);
@@ -41,6 +41,11 @@ Screen1ViewBase::Screen1ViewBase()
     textArea3.setWildcard2(textArea3Buffer2);
     textArea3.setTypedText(touchgfx::TypedText(T___SINGLEUSE_0DCI));
     add(textArea3);
+
+    tiledImage1.setBitmap(touchgfx::Bitmap(BITMAP_IMAGE_2025_12_17_16_44_01_ID));
+    tiledImage1.setPosition(0, 0, 320, 240);
+    tiledImage1.setOffset(0, 0);
+    add(tiledImage1);
 }
 
 Screen1ViewBase::~Screen1ViewBase()

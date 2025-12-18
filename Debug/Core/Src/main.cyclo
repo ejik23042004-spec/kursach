@@ -8,10 +8,10 @@
 ../Core/Src/main.c:486:13:MX_GPIO_Init	1
 ../Core/Src/main.c:546:6:TouchGFX_Task_custom	1
 ../Core/Src/main.c:556:6:VSyncTask	1
-../Core/Src/main.c:578:7:sine_function	1
-../Core/Src/main.c:601:18:circle_function	3
-../Core/Src/main.c:632:6:TouchTask	3
-../Core/Src/main.c:681:6:StartDisplayTask	6
-../Core/Src/main.c:795:6:StartDefaultTask	1
-../Core/Src/main.c:814:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:832:6:Error_Handler	1
+../Core/Src/main.c:594:7:sine_function	1
+../Core/Src/main.c:617:18:circle_function	3
+../Core/Src/main.c:648:6:TouchTask	3
+../Core/Src/main.c:697:6:StartDisplayTask	6
+../Core/Src/main.c:811:6:StartDefaultTask	1
+../Core/Src/main.c:830:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:848:6:Error_Handler	1

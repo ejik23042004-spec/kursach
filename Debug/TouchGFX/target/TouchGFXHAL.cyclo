@@ -35,7 +35,7 @@
 ../TouchGFX/target/TouchGFXHAL.cpp:166:6:virtual bool TouchGFXHAL::beginFrame()	1
 ../TouchGFX/target/TouchGFXHAL.cpp:171:6:virtual void TouchGFXHAL::endFrame()	1
 ../TouchGFX/target/TouchGFXHAL.cpp:200:6:void touchgfxDisplayDriverTransmitBlock(const uint8_t*, uint16_t, uint16_t, uint16_t, uint16_t)	3
-../TouchGFX/target/TouchGFXHAL.cpp:238:5:int touchgfxDisplayDriverTransmitActive()	2
-../TouchGFX/target/TouchGFXHAL.cpp:247:5:int touchgfxDisplayDriverShouldTransferBlock(uint16_t)	1
+../TouchGFX/target/TouchGFXHAL.cpp:242:5:int touchgfxDisplayDriverTransmitActive()	2
+../TouchGFX/target/TouchGFXHAL.cpp:251:5:int touchgfxDisplayDriverShouldTransferBlock(uint16_t)	1
 ../TouchGFX/target/TouchGFXHAL.hpp:36:7:TouchGFXHAL::~TouchGFXHAL()	1
 ../TouchGFX/target/TouchGFXHAL.hpp:36:7:virtual TouchGFXHAL::~TouchGFXHAL()	1

@@ -152,7 +152,12 @@ void ILI9341_Init() {
         uint8_t data[] = { 0x00, 0x18 };
         ILI9341_WriteData(data, sizeof(data));
     }
-
+    // MADCTL
+        ILI9341_WriteCommand(0x36);
+        {
+            uint8_t data[] = { ILI9341_ROTATION };
+            ILI9341_WriteData(data, sizeof(data));
+        }
     // DISPLAY FUNCTION CONTROL
     ILI9341_WriteCommand(0xB6);
     {
@@ -197,12 +202,7 @@ void ILI9341_Init() {
     // TURN ON DISPLAY
     ILI9341_WriteCommand(0x29);
 
-    // MADCTL
-    ILI9341_WriteCommand(0x36);
-    {
-        uint8_t data[] = { ILI9341_ROTATION };
-        ILI9341_WriteData(data, sizeof(data));
-    }
+
 
     ILI9341_Unselect();
 }
