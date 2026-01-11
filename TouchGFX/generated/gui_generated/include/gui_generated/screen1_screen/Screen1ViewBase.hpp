@@ -10,7 +10,6 @@
 #include <touchgfx/widgets/Box.hpp>
 #include <touchgfx/widgets/TextAreaWithWildcard.hpp>
 #include <touchgfx/widgets/Button.hpp>
-#include <touchgfx/widgets/TiledImage.hpp>
 
 class Screen1ViewBase : public touchgfx::View<Screen1Presenter>
 {
@@ -28,19 +27,18 @@ protected:
      * Member Declarations
      */
     touchgfx::Box __background;
-    touchgfx::TextAreaWithOneWildcard textArea1;
+    touchgfx::TextAreaWithTwoWildcards textArea1;
     touchgfx::Button button1;
-    touchgfx::TextAreaWithOneWildcard textArea2;
+    touchgfx::TextAreaWithTwoWildcards textArea2;
     touchgfx::TextAreaWithTwoWildcards textArea3;
-    touchgfx::TiledImage tiledImage1;
 
     /*
      * Wildcard Buffers
      */
-    static const uint16_t TEXTAREA1_SIZE = 10;
-    touchgfx::Unicode::UnicodeChar textArea1Buffer[TEXTAREA1_SIZE];
-    static const uint16_t TEXTAREA2_SIZE = 10;
-    touchgfx::Unicode::UnicodeChar textArea2Buffer[TEXTAREA2_SIZE];
+    static const uint16_t TEXTAREA1BUFFER1_SIZE = 10;
+    touchgfx::Unicode::UnicodeChar textArea1Buffer1[TEXTAREA1BUFFER1_SIZE];
+    static const uint16_t TEXTAREA2BUFFER1_SIZE = 10;
+    touchgfx::Unicode::UnicodeChar textArea2Buffer1[TEXTAREA2BUFFER1_SIZE];
     static const uint16_t TEXTAREA3BUFFER1_SIZE = 10;
     touchgfx::Unicode::UnicodeChar textArea3Buffer1[TEXTAREA3BUFFER1_SIZE];
     static const uint16_t TEXTAREA3BUFFER2_SIZE = 10;

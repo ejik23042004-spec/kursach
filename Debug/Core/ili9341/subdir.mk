@@ -5,22 +5,28 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/ili9341/ds18b20.c \
 ../Core/ili9341/fonts.c \
 ../Core/ili9341/ft6336.c \
 ../Core/ili9341/ili9341.c \
-../Core/ili9341/ili9341_touch.c 
+../Core/ili9341/ili9341_touch.c \
+../Core/ili9341/ow.c 
 
 C_DEPS += \
+./Core/ili9341/ds18b20.d \
 ./Core/ili9341/fonts.d \
 ./Core/ili9341/ft6336.d \
 ./Core/ili9341/ili9341.d \
-./Core/ili9341/ili9341_touch.d 
+./Core/ili9341/ili9341_touch.d \
+./Core/ili9341/ow.d 
 
 OBJS += \
+./Core/ili9341/ds18b20.o \
 ./Core/ili9341/fonts.o \
 ./Core/ili9341/ft6336.o \
 ./Core/ili9341/ili9341.o \
-./Core/ili9341/ili9341_touch.o 
+./Core/ili9341/ili9341_touch.o \
+./Core/ili9341/ow.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -30,7 +36,7 @@ Core/ili9341/%.o Core/ili9341/%.su Core/ili9341/%.cyclo: ../Core/ili9341/%.c Cor
 clean: clean-Core-2f-ili9341
 
 clean-Core-2f-ili9341:
-	-$(RM) ./Core/ili9341/fonts.cyclo ./Core/ili9341/fonts.d ./Core/ili9341/fonts.o ./Core/ili9341/fonts.su ./Core/ili9341/ft6336.cyclo ./Core/ili9341/ft6336.d ./Core/ili9341/ft6336.o ./Core/ili9341/ft6336.su ./Core/ili9341/ili9341.cyclo ./Core/ili9341/ili9341.d ./Core/ili9341/ili9341.o ./Core/ili9341/ili9341.su ./Core/ili9341/ili9341_touch.cyclo ./Core/ili9341/ili9341_touch.d ./Core/ili9341/ili9341_touch.o ./Core/ili9341/ili9341_touch.su
+	-$(RM) ./Core/ili9341/ds18b20.cyclo ./Core/ili9341/ds18b20.d ./Core/ili9341/ds18b20.o ./Core/ili9341/ds18b20.su ./Core/ili9341/fonts.cyclo ./Core/ili9341/fonts.d ./Core/ili9341/fonts.o ./Core/ili9341/fonts.su ./Core/ili9341/ft6336.cyclo ./Core/ili9341/ft6336.d ./Core/ili9341/ft6336.o ./Core/ili9341/ft6336.su ./Core/ili9341/ili9341.cyclo ./Core/ili9341/ili9341.d ./Core/ili9341/ili9341.o ./Core/ili9341/ili9341.su ./Core/ili9341/ili9341_touch.cyclo ./Core/ili9341/ili9341_touch.d ./Core/ili9341/ili9341_touch.o ./Core/ili9341/ili9341_touch.su ./Core/ili9341/ow.cyclo ./Core/ili9341/ow.d ./Core/ili9341/ow.o ./Core/ili9341/ow.su
 
 .PHONY: clean-Core-2f-ili9341
 

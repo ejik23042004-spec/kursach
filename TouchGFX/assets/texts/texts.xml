@@ -10,10 +10,10 @@
         <Translation Language="GB">x:&lt;value&gt;&#10;y:&lt;value&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_WLLQ" Alignment="Center" TypographyId="Default">
-        <Translation Language="GB">Температура в&#10;холодной зоне&#10;&lt;value&gt;</Translation>
+        <Translation Language="GB">Температура в&#10;холодной зоне&#10;&lt;value&gt;.&lt;value&gt;</Translation>
       </Text>
       <Text Id="__SingleUse_R9K3" Alignment="Center" TypographyId="Default">
-        <Translation Language="GB">Температура в&#10; теплой зоне &#10;&lt;value&gt;</Translation>
+        <Translation Language="GB">Температура в&#10; теплой зоне &#10;&lt;value&gt;.&lt;value&gt;</Translation>
       </Text>
       <Text Id="ResourceId1" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">New Text</Translation>

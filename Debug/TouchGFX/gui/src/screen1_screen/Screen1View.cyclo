@@ -1,13 +1,22 @@
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/Screen.hpp:104:18:virtual void touchgfx::Screen::afterTransition()	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/Screen.hpp:115:18:virtual void touchgfx::Screen::tearDownScreen()	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/Screen.hpp:154:18:virtual void touchgfx::Screen::handleKeyEvent(uint8_t)	1
-../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextAreaWithWildcard.hpp:79:10:void touchgfx::TextAreaWithOneWildcard::setWildcard1(const touchgfx::Unicode::UnicodeChar*)	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextAreaWithWildcard.hpp:142:10:void touchgfx::TextAreaWithTwoWildcards::setWildcard1(const touchgfx::Unicode::UnicodeChar*)	1
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextAreaWithWildcard.hpp:161:10:void touchgfx::TextAreaWithTwoWildcards::setWildcard2(const touchgfx::Unicode::UnicodeChar*)	1
-../TouchGFX/gui/include/gui/screen1_screen/Screen1View.hpp:15:13:Screen1View::~Screen1View()	1
-../TouchGFX/gui/include/gui/screen1_screen/Screen1View.hpp:15:13:virtual Screen1View::~Screen1View()	1
-../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:4:1:Screen1View::Screen1View()	1
-../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:27:6:virtual void Screen1View::setupScreen()	1
-../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:32:6:virtual void Screen1View::handleTickEvent()	1
-../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:49:6:virtual void Screen1View::tearDownScreen()	1
-../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:54:6:void Screen1View::setText(const char*)	1
+../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/AbstractButton.hpp:63:10:void touchgfx::AbstractButton::setAction(touchgfx::GenericCallback<const touchgfx::AbstractButton&>&)	1
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:357:8:touchgfx::Callback<Screen1View, const touchgfx::AbstractButton&>::~Callback()	1
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:357:8:virtual touchgfx::Callback<Screen1View, const touchgfx::AbstractButton&>::~Callback()	1
+../TouchGFX/gui/include/gui/screen1_screen/Screen1View.hpp:32:13:Screen1View::~Screen1View()	1
+../TouchGFX/gui/include/gui/screen1_screen/Screen1View.hpp:32:13:virtual Screen1View::~Screen1View()	1
+../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:7:1:Screen1View::Screen1View()	1
+../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:36:6:virtual void Screen1View::setupScreen()	1
+../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:44:6:virtual void Screen1View::handleTickEvent()	4
+../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:90:6:virtual void Screen1View::tearDownScreen()	1
+../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:95:6:void Screen1View::setText(const char*)	1
+../TouchGFX/gui/src/screen1_screen/Screen1View.cpp:102:6:void Screen1View::buttonClickedCallback(const touchgfx::AbstractButton&)	2
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:138:13:touchgfx::GenericCallback<T1, void, void>::~GenericCallback() [with T1 = const touchgfx::AbstractButton&]	1
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:138:13:touchgfx::GenericCallback<T1, void, void>::~GenericCallback() [with T1 = const touchgfx::AbstractButton&]	1
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:134:7:constexpr touchgfx::GenericCallback<const touchgfx::AbstractButton&>::GenericCallback()	1
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:373:5:touchgfx::Callback<dest_type, T1, void, void>::Callback(dest_type*, void (dest_type::*)(T1)) [with dest_type = Screen1View; T1 = const touchgfx::AbstractButton&]	1
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:386:18:void touchgfx::Callback<dest_type, T1, void, void>::execute(T1) [with dest_type = Screen1View; T1 = const touchgfx::AbstractButton&]	2
+../Middlewares/ST/touchgfx/framework/include/touchgfx/Callback.hpp:396:18:bool touchgfx::Callback<dest_type, T1, void, void>::isValid() const [with dest_type = Screen1View; T1 = const touchgfx::AbstractButton&]	5

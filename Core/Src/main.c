@@ -19,12 +19,20 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "crc.h"
+#include "i2c.h"
+#include "spi.h"
+#include "tim.h"
+#include "gpio.h"
 #include "app_touchgfx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ili9341.h"
 #include "ft6336.h"
+#include "ds18b20.h"
+#include "FreeRTOS.h"
+#include "queue.h"
 
 /* USER CODE END Includes */
 
@@ -44,36 +52,40 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CRC_HandleTypeDef hcrc;
 
-I2C_HandleTypeDef hi2c1;
-
-SPI_HandleTypeDef hspi1;
-
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* USER CODE BEGIN PV */
+ds18b20_t ds18;
+
+// Структура для передачи температуры через очередь
+typedef struct {
+    int16_t temp_cold;  // Температура в холодной зоне (в сотых градуса, например 1025 = 10.25°C)
+    int16_t temp_warm;  // Температура в теплой зоне
+} temp_data_t;
+
+// Очередь для передачи температуры в TouchGFX (FreeRTOS очередь)
+QueueHandle_t tempQueueHandle;
+
+// Последние корректные значения температуры (для защиты от аномальных значений)
+static temp_data_t last_valid_temp = {0, 0};
+
+// Границы допустимых значений температуры (в сотых градуса)
+// DS18B20 диапазон: -55°C до +125°C, используем более узкий диапазон для практических применений
+#define TEMP_MIN_CENTIDEGREES  (-5000)  // -50.00°C
+#define TEMP_MAX_CENTIDEGREES  (10000)  // +100.00°C
+
+// Защита от зависания и отваливания датчиков
+#define TEMP_VALID_DATA_TIMEOUT_MS    (30000)  // 30 секунд без валидных данных - переинициализация
+#define TEMP_REINIT_MAX_ATTEMPTS      (3)      // Максимум попыток переинициализации
+
+static uint32_t last_valid_data_time = 0;      // Время последнего успешного чтения
+static uint32_t last_reinit_time = 0;          // Время последней переинициализации
+static uint8_t reinit_attempts = 0;            // Счетчик попыток переинициализации
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_USART1_UART_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_CRC_Init(void);
-static void MX_I2C1_Init(void);
-void StartDefaultTask(void *argument);
-
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 
@@ -81,7 +93,8 @@ void TouchGFX_Task_custom(void *argument);
 void StartDisplayTask(void *argument);
 void VSyncTask(void *argument);
 void TouchTask(void *argument);
-
+void Temp_Task(void *argument);
+void TempControl_Task(void *argument);
 
 /* USER CODE END PFP */
 
@@ -120,10 +133,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-  MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
   MX_CRC_Init();
   MX_I2C1_Init();
+  MX_TIM2_Init();
   MX_TouchGFX_Init();
   /* Call PreOsInit function */
   MX_TouchGFX_PreOSInit();
@@ -131,44 +143,19 @@ int main(void)
   
   // Инициализация FT6336 тачскрина (до запуска RTOS)
 
-
-  /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-
-
-
-
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-
-
+  osThreadId_t ds1820bTaskHandle;
   osThreadId_t displayTaskHandle;
   osThreadId_t touchgfxTaskHandle;
   osThreadId_t vsyncTaskHandle;
   osThreadId_t touchTaskHandle;
+  osThreadId_t tempControlTaskHandle;
+
+  const osThreadAttr_t ds1820bTask_attributes = {
+        .name = "ds1820bTask",
+        .stack_size = 512 * 4,
+        .priority = (osPriority_t) osPriorityNormal,
+    };
+
 
   const osThreadAttr_t displayTask_attributes = {
       .name = "displayTask",
@@ -194,6 +181,12 @@ int main(void)
     .priority = (osPriority_t) osPriorityNormal
   };
 
+  const osThreadAttr_t tempControlTask_attributes = {
+    .name = "TempControlTask",
+    .stack_size = 256 * 4,
+    .priority = (osPriority_t) osPriorityNormal
+  };
+
   touchgfxTaskHandle = osThreadNew(TouchGFX_Task_custom, NULL, &touchgfxTask_attributes);
 
   /* Периодический VSYNC в отдельном потоке (для тестов, без использования таймеров) */
@@ -202,14 +195,26 @@ int main(void)
   /* Задача опроса тачскрина каждые 10 мс */
   touchTaskHandle = osThreadNew(TouchTask, NULL, &touchTask_attributes);
 
+  // Создаем FreeRTOS очередь для передачи температуры (размер 5 элементов)
+  tempQueueHandle = xQueueCreate(5, sizeof(temp_data_t));
 
-  //displayTaskHandle = osThreadNew(StartDisplayTask, NULL, &displayTask_attributes);
+  ds1820bTaskHandle = osThreadNew(Temp_Task, NULL, &touchTask_attributes);
 
-  /* USER CODE END RTOS_THREADS */
+  // Задача управления GPIO по температуре
+  tempControlTaskHandle = osThreadNew(TempControl_Task, NULL, &tempControlTask_attributes);
 
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
+
+
+
+
+
+
+
+  /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in cmsis_os2.c) */
+  MX_FREERTOS_Init();
 
   /* Start scheduler */
   osKernelStart();
@@ -289,256 +294,6 @@ void SystemClock_Config(void)
   }
 }
 
-/**
-  * @brief CRC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_CRC_Init(void)
-{
-
-  /* USER CODE BEGIN CRC_Init 0 */
-
-  /* USER CODE END CRC_Init 0 */
-
-  /* USER CODE BEGIN CRC_Init 1 */
-
-  /* USER CODE END CRC_Init 1 */
-  hcrc.Instance = CRC;
-  hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
-  hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
-  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
-  hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
-  hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
-  if (HAL_CRC_Init(&hcrc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN CRC_Init 2 */
-
-  /* USER CODE END CRC_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00F12981;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
-  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
-
-  /* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PA8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB3 PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /**/
-  __HAL_SYSCFG_FASTMODEPLUS_ENABLE(SYSCFG_FASTMODEPLUS_PB6);
-
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
-}
-
 /* USER CODE BEGIN 4 */
 #include <math.h>
 
@@ -551,6 +306,205 @@ void TouchGFX_Task_custom(void *argument)
      */
     (void)argument;
     MX_TouchGFX_Process();  // не возвращает управление
+}
+
+
+
+
+void ds18_tim_cb(TIM_HandleTypeDef *htim)
+{
+    ow_callback(&ds18.ow);
+}
+
+// Функция переинициализации датчиков
+static void reinit_ds18b20_sensors(void)
+{
+    ow_init_t ow_init_struct;
+    ow_init_struct.tim_handle = &htim2;
+    ow_init_struct.gpio = GPIOA;
+    ow_init_struct.pin = GPIO_PIN_9;
+    ow_init_struct.tim_cb = ds18_tim_cb;
+    ow_init_struct.done_cb = NULL;   // Optional
+    ow_init_struct.rom_id_filter = DS18B20_ID;
+
+    ds18b20_init(&ds18, &ow_init_struct);
+
+    // Update ROM IDs for all devices
+    ds18b20_update_rom_id(&ds18);
+    while(ds18b20_is_busy(&ds18));
+
+    // Configure alarm thresholds and resolution
+    ds18b20_config_t ds18_conf = {
+        .alarm_high = 50,
+        .alarm_low = -50,
+        .cnv_bit = DS18B20_CNV_BIT_12
+    };
+    ds18b20_conf(&ds18, &ds18_conf);
+    while(ds18b20_is_busy(&ds18));
+}
+
+void Temp_Task(void *argument)
+{
+    (void)argument;
+    ow_init_t ow_init_struct;
+    ow_init_struct.tim_handle = &htim2;
+    ow_init_struct.gpio = GPIOA;
+    ow_init_struct.pin = GPIO_PIN_9;
+    ow_init_struct.tim_cb = ds18_tim_cb;
+    ow_init_struct.done_cb = NULL;   // Optional
+    ow_init_struct.rom_id_filter = DS18B20_ID;
+
+    ds18b20_init(&ds18, &ow_init_struct);
+
+    // Update ROM IDs for all devices
+    ds18b20_update_rom_id(&ds18);
+    while(ds18b20_is_busy(&ds18));
+
+    // Configure alarm thresholds and resolution
+    ds18b20_config_t ds18_conf = {
+        .alarm_high = 50,
+        .alarm_low = -50,
+        .cnv_bit = DS18B20_CNV_BIT_12
+    };
+    ds18b20_conf(&ds18, &ds18_conf);
+    while(ds18b20_is_busy(&ds18));
+
+    // Инициализируем время последнего успешного чтения
+    last_valid_data_time = HAL_GetTick();
+    last_reinit_time = HAL_GetTick();
+    reinit_attempts = 0;
+
+    temp_data_t temp_data;
+    uint32_t current_time;
+    uint32_t time_since_valid_data;
+    uint8_t both_valid = 0;
+
+    for (;;)
+    {
+        current_time = HAL_GetTick();
+        
+        // Запускаем конвертацию температуры на всех датчиках
+    	ds18b20_cnv(&ds18);
+    	while(ds18b20_is_busy(&ds18));
+    	while(!ds18b20_is_cnv_done(&ds18));
+
+        // Читаем температуру с первого датчика (холодная зона, индекс 0)
+    	ds18b20_req_read(&ds18, 0);
+    	while(ds18b20_is_busy(&ds18));
+    	temp_data.temp_cold = ds18b20_read_c(&ds18);
+    	osDelay(10);
+        // Читаем температуру со второго датчика (теплая зона, индекс 1)
+    	ds18b20_req_read(&ds18, 1);
+    	while(ds18b20_is_busy(&ds18));
+    	temp_data.temp_warm = ds18b20_read_c(&ds18);
+
+        // Защита от аномальных значений
+        both_valid = 1;
+        
+        // Проверяем диапазон для холодной зоны
+        if (temp_data.temp_cold < TEMP_MIN_CENTIDEGREES || temp_data.temp_cold > TEMP_MAX_CENTIDEGREES) {
+            // Используем последнее корректное значение
+            temp_data.temp_cold = last_valid_temp.temp_cold;
+            both_valid = 0;  // Данные невалидны
+        } else {
+            // Сохраняем корректное значение
+            last_valid_temp.temp_cold = temp_data.temp_cold;
+        }
+
+        // Проверяем диапазон для теплой зоны
+        if (temp_data.temp_warm < TEMP_MIN_CENTIDEGREES || temp_data.temp_warm > TEMP_MAX_CENTIDEGREES) {
+            // Используем последнее корректное значение
+            temp_data.temp_warm = last_valid_temp.temp_warm;
+            both_valid = 0;  // Данные невалидны
+        } else {
+            // Сохраняем корректное значение
+            last_valid_temp.temp_warm = temp_data.temp_warm;
+        }
+
+        // Если оба значения валидны, обновляем время последнего успешного чтения
+        if (both_valid) {
+            last_valid_data_time = current_time;
+            reinit_attempts = 0;  // Сбрасываем счетчик попыток при успешном чтении
+        }
+
+        // Проверяем, не прошло ли слишком много времени без валидных данных
+        time_since_valid_data = current_time - last_valid_data_time;
+        
+        if (time_since_valid_data > TEMP_VALID_DATA_TIMEOUT_MS) {
+            // Долгое время нет валидных данных - переинициализируем датчики
+            reinit_attempts++;
+            last_reinit_time = current_time;
+            reinit_ds18b20_sensors();
+            
+            // Если переинициализация не помогла после нескольких попыток - перезапускаем задачу
+            if (reinit_attempts >= TEMP_REINIT_MAX_ATTEMPTS) {
+                // Сбрасываем все счетчики и переинициализируем задачу
+                last_valid_data_time = current_time;
+                last_reinit_time = current_time;
+                reinit_attempts = 0;
+                
+                // Переинициализируем датчики еще раз
+                reinit_ds18b20_sensors();
+                
+                // Небольшая задержка перед продолжением работы
+                osDelay(1000);
+            }
+        }
+
+        // Отправляем данные в FreeRTOS очередь для TouchGFX
+        // Используем xQueueSend с таймаутом 0 (неблокирующий)
+        xQueueSend(tempQueueHandle, &temp_data, 0);
+
+        osDelay(1000);
+    }
+}
+
+// Функция для получения температуры из FreeRTOS очереди (для использования в C++)
+// Возвращает pdTRUE (1) при успехе, pdFALSE (0) при ошибке
+BaseType_t getTemperatureFromQueue(temp_data_t *data)
+{
+    if (tempQueueHandle != NULL) {
+        return xQueueReceive(tempQueueHandle, data, 0);  // Таймаут 0 = неблокирующий
+    }
+    return pdFALSE;
+}
+
+// Функция toggle для PB10 (для использования в C++)
+void togglePB10(void)
+{
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
+}
+
+// Задача управления GPIO PA8 по температуре
+// Если температура < 32°C, подтягивает PA8 к земле (GPIO_PIN_RESET)
+// Если температура >= 32°C, отпускает PA8 (GPIO_PIN_SET для OPEN_DRAIN)
+void TempControl_Task(void *argument)
+{
+    (void)argument;
+    temp_data_t temp_data;
+    const int16_t TEMP_THRESHOLD_CENTIDEGREES = 3200;  // 32.00°C в сотых градуса
+    
+    for (;;)
+    {
+        // Получаем данные температуры из очереди БЕЗ удаления (xQueuePeek)
+        // Это позволяет TouchGFX также получить эти данные
+        if (xQueuePeek(tempQueueHandle, &temp_data, pdMS_TO_TICKS(1000)) == pdTRUE)
+        {
+            // Проверяем температуру холодной зоны (можно использовать любую зону или обе)
+            // Используем температуру холодной зоны для управления
+            if (temp_data.temp_cold < TEMP_THRESHOLD_CENTIDEGREES)
+            {
+                // Температура ниже 32°C - подтягиваем PA8 к земле
+                HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+            }
+            else
+            {
+                // Температура >= 32°C - отпускаем PA8 (для OPEN_DRAIN это HIGH)
+                HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+            }
+        }
+        // Если данные не получены (таймаут), продолжаем цикл
+    }
 }
 
 void VSyncTask(void *argument)
@@ -800,24 +754,6 @@ void StartDisplayTask(void *argument)
 
 
 /* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

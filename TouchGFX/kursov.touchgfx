@@ -20,7 +20,8 @@
             "Wildcard1": {
               "UseBuffer": true,
               "BufferSize": 10
-            }
+            },
+            "Wildcard2": {}
           },
           {
             "Type": "Button",
@@ -49,7 +50,8 @@
             "Wildcard1": {
               "UseBuffer": true,
               "BufferSize": 10
-            }
+            },
+            "Wildcard2": {}
           },
           {
             "Type": "TextArea",
@@ -73,13 +75,6 @@
               "UseBuffer": true,
               "BufferSize": 10
             }
-          },
-          {
-            "Type": "TiledImage",
-            "Name": "tiledImage1",
-            "Width": 320,
-            "Height": 240,
-            "FileName": "image_2025-12-17_16-44-01.png"
           }
         ],
         "Interactions": []
